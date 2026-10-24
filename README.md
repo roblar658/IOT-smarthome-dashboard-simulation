@@ -4,6 +4,12 @@ SmartGuard IoT er en feiltolerant, sanntids- og sikkerhetskritisk IoT-plattform 
 
 Systemet tilfredsstiller samtlige krav spesifisert i **Beskrivelse 1 til 5** (23 funksjonelle krav og 16 ikke-funksjonelle krav).
 
+<img width="924" height="498" alt="image" src="https://github.com/user-attachments/assets/debb5822-278b-4352-b330-50a46e05884b" />
+<img width="934" height="493" alt="image" src="https://github.com/user-attachments/assets/997ca15e-5042-459e-b3d6-cb5611b21c98" />
+<img width="947" height="490" alt="image" src="https://github.com/user-attachments/assets/cdc282e8-3fb7-4999-9a50-16213e87d0e7" />
+<img width="946" height="506" alt="image" src="https://github.com/user-attachments/assets/9615e271-3ad8-4549-95ec-71e79c0e01de" />
+
+
 ---
 
 ## 1. Kravsporbarhetsmatrise (Traceability Matrix)
