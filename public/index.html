@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartGuard - Smarthus og Nødrespons</title>
+  <meta name="description" content="Integrert plattform for smarthus, sikkerhetsovervåking, energistyring og automatisert nødrespons.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Kritisk Nødvarsel Banner -->
+  <div id="mandatory-alarm-banner" class="emergency-banner hidden" role="alert">
+    <div class="banner-content">
+      <div class="banner-text">
+        <h2 id="banner-title">Kritisk nødrespons aktivert</h2>
+        <p id="banner-desc">Automatisert nødrespons er iverksatt: Nødutganger er låst opp, evakueringsbelysning er aktivert og nødsentral er varslet.</p>
+      </div>
+      <div class="banner-actions">
+        <button id="btn-banner-reset" class="btn btn-banner-reset" onclick="resetEmergency()">Tilbakestill nødrespons</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hovednavigasjon -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark">SG</div>
+      <div>
+        <h1 class="brand-title">SmartGuard <span class="badge-environment">Enterprise</span></h1>
+        <p class="brand-subtitle">Smarthus og Nødrespons</p>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div class="status-pill">
+        <span class="status-label">Systemstatus:</span>
+        <span id="system-status-indicator" class="status-value status-online">Normal drift</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-label">Tjenestenivå:</span>
+        <span id="sub-plan-badge" class="status-value">Døgnkontinuerlig nødsentral</span>
+      </div>
+      <button class="btn btn-secondary" id="btn-open-billing" onclick="openBillingModal()">Abonnement</button>
+      <button class="btn btn-primary" id="btn-add-device-modal" onclick="openAddDeviceModal()">Ny enhet</button>
+    </div>
+  </header>
+
+  <!-- Hovedinnhold -->
+  <main class="dashboard-grid">
+
+    <!-- Seksjon 1: Hendelsessimulering og Sikkerhetsstyring -->
+    <section class="card panel-simulator">
+      <div class="card-header">
+        <div>
+          <h3>Hendelsessimulering og manuell overstyring</h3>
+          <p class="card-desc">Test systemets automatiske nødrespons ved å simulere bekreftede avvik på tvers av uavhengige sensorer.</p>
+        </div>
+      </div>
+
+      <div class="sim-buttons-grid">
+        <button id="sim-fire-btn" class="sim-btn" onclick="toggleSimFire()">
+          <div class="sim-btn-content">
+            <span class="sim-btn-title">Simuler brannalarm</span>
+            <span class="sim-btn-desc">Termisk stigning og røykdeteksjon</span>
+          </div>
+          <span id="sim-fire-badge" class="sim-indicator"></span>
+        </button>
+
+        <button id="sim-leak-btn" class="sim-btn" onclick="toggleSimLeak()">
+          <div class="sim-btn-content">
+            <span class="sim-btn-title">Simuler vannlekkasje</span>
+            <span class="sim-btn-desc">Gulvfukt og unormal vannstrøm</span>
+          </div>
+          <span id="sim-leak-badge" class="sim-indicator"></span>
+        </button>
+
+        <button id="sim-intrusion-btn" class="sim-btn" onclick="toggleSimIntrusion()">
+          <div class="sim-btn-content">
+            <span class="sim-btn-title">Simuler adgangsbrudd</span>
+            <span class="sim-btn-desc">Dørsensor og bevegelsessporing</span>
+          </div>
+          <span id="sim-intrusion-badge" class="sim-indicator"></span>
+        </button>
+
+        <button id="sim-health-btn" class="sim-btn" onclick="toggleSimHealth()">
+          <div class="sim-btn-content">
+            <span class="sim-btn-title">Simuler helsealarm</span>
+            <span class="sim-btn-desc">Registrert fall og unormal puls</span>
+          </div>
+          <span id="sim-health-badge" class="sim-indicator"></span>
+        </button>
+
+        <button id="sim-fault-btn" class="sim-btn" onclick="toggleSimFault()">
+          <div class="sim-btn-content">
+            <span class="sim-btn-title">Simuler mekanisk slitasje</span>
+            <span class="sim-btn-desc">Vibrasjons- og frekvensavvik</span>
+          </div>
+          <span id="sim-fault-badge" class="sim-indicator"></span>
+        </button>
+
+        <button id="btn-master-reset" class="sim-btn sim-btn-reset" onclick="resetEmergency()">
+          <div class="sim-btn-content">
+            <span class="sim-btn-title">Tilbakestill alle alarmer</span>
+            <span class="sim-btn-desc">Gjenopprett normal standby</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Aktuatorstatus -->
+      <div class="actuators-status-box">
+        <div class="actuator-chips">
+          <div class="chip" id="chip-water-valve">
+            <span class="chip-name">Hovedvannventil:</span>
+            <strong id="val-water-valve">Åpen</strong>
+          </div>
+          <div class="chip" id="chip-emergency-door">
+            <span class="chip-name">Nødutganger:</span>
+            <strong id="val-emergency-door">Låst</strong>
+          </div>
+          <div class="chip" id="chip-lighting">
+            <span class="chip-name">Evakueringsbelysning:</span>
+            <strong id="val-lighting">Normal</strong>
+          </div>
+          <div class="chip" id="chip-hvac">
+            <span class="chip-name">Ventilasjonsspjeld:</span>
+            <strong id="val-hvac">Komfortmodus</strong>
+          </div>
+          <div class="chip" id="chip-camera-stream">
+            <span class="chip-name">Sikkerhetskamera:</span>
+            <strong id="val-camera-stream">Standby</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seksjon 2: AI Sikkerhetskamera & Videoovervåkning -->
+    <section class="card panel-camera">
+      <div class="card-header">
+        <div>
+          <h3>Sikkerhetskamera og visuell overvåkning</h3>
+          <p class="card-desc">Sanntids bildeanalyse med AI-gjenkjenning av personer, inntrengere, røyk og flammer.</p>
+        </div>
+      </div>
+
+      <!-- Kamerakanalvelger -->
+      <div class="camera-channels-bar">
+        <button id="btn-cam-auto" class="cam-channel-btn active" onclick="setCameraChannel('auto')">Auto-hendelse</button>
+        <button id="btn-cam-normal" class="cam-channel-btn" onclick="setCameraChannel('normal')">Kamera 1: Normal korridor</button>
+        <button id="btn-cam-intrusion" class="cam-channel-btn" onclick="setCameraChannel('intrusion')">Kamera 2: Inntrenger</button>
+        <button id="btn-cam-fire" class="cam-channel-btn" onclick="setCameraChannel('fire')">Kamera 3: Røyk og flammer</button>
+      </div>
+
+      <div class="video-feed-wrapper">
+        <canvas id="camera-canvas" width="640" height="360"></canvas>
+        <div class="feed-overlay-top">
+          <span class="cam-badge" id="cam-rec-mode">Standby (5 bps)</span>
+          <span class="cam-badge" id="cam-timestamp">2026-10-24 10:14:02 UTC</span>
+          <span class="cam-badge" id="cam-feed-source">AI Kamera 04</span>
+        </div>
+        <div class="feed-overlay-bottom">
+          <div class="ai-status">
+            <span class="ai-label">Beslutningsstøtte:</span>
+            <span id="ai-decision-text" class="ai-value">Ingen trusler detektert</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="camera-metrics-bar">
+        <div class="metric-item">
+          <span class="metric-label">Detekterte objekter:</span>
+          <strong id="cam-objects-count">0</strong>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Objektsporing:</span>
+          <strong id="cam-ptz-status">Deaktivert</strong>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Infrarødt nattkamera:</span>
+          <strong class="text-success">Aktivt</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seksjon 3: Sensorfusjon og Verifisering -->
+    <section class="card panel-sensors">
+      <div class="card-header">
+        <div>
+          <h3>Sensorfusjon og feilkorreksjon</h3>
+          <p class="card-desc">Kryssevaluering av uavhengige sensorer for å eliminere målestøy og feilkalibrering.</p>
+        </div>
+      </div>
+
+      <div class="sensor-pairs-list">
+        <!-- Par 1: Termisk og Røyk (Brann) -->
+        <div class="sensor-card" id="pair-fire">
+          <div class="pair-title-bar">
+            <strong>Termisk og kjemisk overvåking (Brann)</strong>
+            <span id="fire-conf-badge" class="conf-badge">Normal (0%)</span>
+          </div>
+          <div class="sensor-readings-row">
+            <div class="sensor-box">
+              <span class="s-name">Termistor (Råmåling)</span>
+              <span class="s-val"><span id="val-temp-raw">21.5</span> °C</span>
+              <small>Filtrert verdi: <span id="val-temp-kalman">21.5</span> °C</small>
+            </div>
+            <div class="sensor-box">
+              <span class="s-name">Optisk partikkel / CO</span>
+              <span class="s-val"><span id="val-smoke">12</span> ppm</span>
+              <small>CO-nivå: <span id="val-co">4</span> ppm</small>
+            </div>
+          </div>
+          <div class="verification-status" id="fire-verify-note">
+            Status: Krever to uavhengige sensorer for å utløse alarm.
+          </div>
+        </div>
+
+        <!-- Par 2: Fukt og Gjennomstrømning (Lekkasje) -->
+        <div class="sensor-card" id="pair-leak">
+          <div class="pair-title-bar">
+            <strong>Vann- og fuktovervåking (Lekkasje)</strong>
+            <span id="leak-conf-badge" class="conf-badge">Normal (0%)</span>
+          </div>
+          <div class="sensor-readings-row">
+            <div class="sensor-box">
+              <span class="s-name">Gulvsensor fuktighet</span>
+              <span class="s-val"><span id="val-moisture">5</span> %</span>
+              <small>Resistiv kontaktprobe</small>
+            </div>
+            <div class="sensor-box">
+              <span class="s-name">Hovedmåler vanngjennomstrømning</span>
+              <span class="s-val"><span id="val-water-flow">0.0</span> L/min</span>
+              <small>Ultralyd flowmeter</small>
+            </div>
+          </div>
+          <div class="verification-status" id="leak-verify-note">
+            Status: Automatisk avstenging krever kryssevaluering.
+          </div>
+        </div>
+
+        <!-- Par 3: Bevegelse og Luftkvalitet (Tilstedeværelse) -->
+        <div class="sensor-card" id="pair-occupancy">
+          <div class="pair-title-bar">
+            <strong>Romtilstedeværelse (Klimastyring)</strong>
+            <span id="occ-conf-badge" class="conf-badge">Tomt (10%)</span>
+          </div>
+          <div class="sensor-readings-row">
+            <div class="sensor-box">
+              <span class="s-name">Infrarød bevegelsessensor</span>
+              <span class="s-val" id="val-pir">Ingen</span>
+              <small>PIR-sensor</small>
+            </div>
+            <div class="sensor-box">
+              <span class="s-name">Karbondioksid og akustikk</span>
+              <span class="s-val"><span id="val-co2">480</span> ppm</span>
+              <small>Støynivå: <span id="val-sound">34</span> dB</small>
+            </div>
+          </div>
+          <div class="verification-status" id="occ-verify-note">
+            Status: Økomodus aktiv (redusert energibruk ved tomt rom).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seksjon 4: Energistyring og Lastbalansering -->
+    <section class="card panel-energy">
+      <div class="card-header">
+        <div>
+          <h3>Energistyring og lastbalansering</h3>
+          <p class="card-desc">Kontinuerlig måling av effektforbruk og automatisk reduksjon ved høye belastningstopper.</p>
+        </div>
+      </div>
+
+      <div class="energy-dashboard-body">
+        <div class="energy-gauge-box">
+          <div class="gauge-display">
+            <span class="gauge-val" id="energy-kw-val">2.84</span>
+            <span class="gauge-unit">kW</span>
+          </div>
+          <div class="gauge-bar-track">
+            <div class="gauge-bar-fill" id="energy-bar-fill" style="width: 56%;"></div>
+            <div class="gauge-threshold-line" style="left: 80%;" title="Kapasitetsgrense (5.0 kW)"></div>
+          </div>
+          <div class="gauge-labels">
+            <span>0 kW</span>
+            <span>Maksimalgrense: <strong id="val-peak-limit">5.0 kW</strong></span>
+            <span>10 kW</span>
+          </div>
+        </div>
+
+        <div class="energy-stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Akkumulert døgnforbruk:</span>
+            <strong id="energy-kwh-today">14.82 kWh</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Lastreduksjonsstatus:</span>
+            <strong id="energy-shedding-status" class="text-success">Normal belastning</strong>
+          </div>
+        </div>
+
+        <div class="energy-controls-row">
+          <label class="switch-control">
+            <input type="checkbox" id="chk-peak-shaving" checked onchange="togglePeakShaving(this.checked)">
+            <span class="slider-toggle"></span>
+            <span class="switch-label">Aktiver automatisk lastreduksjon ved forbrukstopper</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seksjon 5: Enhetsadministrasjon -->
+    <section class="card panel-devices">
+      <div class="card-header">
+        <div>
+          <h3>Enhetsoversikt og styring</h3>
+          <p class="card-desc">Administrer tilkoblede apparater, sensorer og nødaktuatorer.</p>
+        </div>
+      </div>
+
+      <div class="device-list-container" id="device-list-container">
+        <!-- Bygges dynamisk i app.js -->
+      </div>
+    </section>
+
+    <!-- Seksjon 6: Prediktivt Vedlikehold og Helseovervåking -->
+    <section class="card panel-maintenance">
+      <div class="card-header">
+        <div>
+          <h3>Prediktivt vedlikehold og personlig helse</h3>
+          <p class="card-desc">Overvåking av helsedata og tidlig varsling om mekanisk komponentslitasje.</p>
+        </div>
+      </div>
+
+      <div class="maintenance-grid">
+        <!-- Helseovervåking -->
+        <div class="sub-card">
+          <h4>Personlig helseovervåking</h4>
+          <div class="health-vitals-row">
+            <div class="vital-item">
+              <span class="vital-label">Pulsfrekvens:</span>
+              <strong id="health-hr">72 slag/min</strong>
+            </div>
+            <div class="vital-item">
+              <span class="vital-label">Oksygenmetning:</span>
+              <strong id="health-spo2">98 %</strong>
+            </div>
+            <div class="vital-item">
+              <span class="vital-label">Bevegelsesbelastning:</span>
+              <strong id="health-impact">0.98 G</strong>
+            </div>
+          </div>
+          <div class="vital-status" id="health-state-text">Status: Normale fysiologiske verdier registrert.</div>
+        </div>
+
+        <!-- Mekanisk tilstand -->
+        <div class="sub-card">
+          <h4>Vaskemaskin - Mekanisk tilstand og lagerslitasje</h4>
+          <div class="wear-bar-wrapper">
+            <div class="wear-bar-label">
+              <span>Beregnet slitasje: <strong id="washer-wear-pct">18.5 %</strong></span>
+              <span>Gjenværende levetid: <strong id="washer-rul-hours">2850 driftstimer</strong></span>
+            </div>
+            <div class="wear-progress">
+              <div id="washer-wear-bar" class="wear-progress-fill" style="width: 18.5%;"></div>
+            </div>
+          </div>
+          <div class="recommendation-box" id="maintenance-recommendation">
+            Normal: Viftemotor og lager opererer innenfor nominelle parametere.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seksjon 7: Varslingslogg -->
+    <section class="card panel-notifications">
+      <div class="card-header">
+        <div>
+          <h3>Hendelseslogg og varslinger</h3>
+          <p class="card-desc">Oversikt over alarmer, automatiske tiltak og utsendte meldinger til nødsentral.</p>
+        </div>
+      </div>
+
+      <div class="notifications-list" id="notifications-list">
+        <!-- Bygges dynamisk -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Legg til ny enhet -->
+  <div id="modal-add-device" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Legg til ny enhet</h3>
+        <button class="modal-close" onclick="closeAddDeviceModal()">Lukk</button>
+      </div>
+      <form id="form-add-device" onsubmit="handleAddDevice(event)">
+        <div class="form-group">
+          <label for="dev-name">Enhetsnavn:</label>
+          <input type="text" id="dev-name" required placeholder="F.eks. Kjøleskap Kjøkken">
+        </div>
+        <div class="form-group">
+          <label for="dev-category">Enhetskategori:</label>
+          <select id="dev-category" required>
+            <option value="APPLIANCE">Husholdningsapparat</option>
+            <option value="CLIMATE">Klimastyring</option>
+            <option value="LIGHTING">Belysning</option>
+            <option value="HEALTH">Helseovervåking</option>
+            <option value="SECURITY">Sikkerhet</option>
+            <option value="SAFETY_ACTUATOR">Sikkerhetsaktuator</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="dev-power">Maksimalt effektforbruk (Watt):</label>
+          <input type="number" id="dev-power" value="120" min="0">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAddDeviceModal()">Avbryt</button>
+          <button type="submit" class="btn btn-primary">Registrer og start</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Abonnement og integrasjon -->
+  <div id="modal-billing" class="modal-backdrop hidden">
+    <div class="modal-card modal-wide">
+      <div class="modal-header">
+        <h3>Abonnementsavtale og nødsentralintegrasjon</h3>
+        <button class="modal-close" onclick="closeBillingModal()">Lukk</button>
+      </div>
+      <p class="modal-subtitle">Velg tjenestenivå for ekstern varsling, skylagring og døgnbemannet vekterutrykning.</p>
+      
+      <div class="pricing-tiers-grid" id="pricing-tiers-grid">
+        <!-- Injisert via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
